@@ -1,0 +1,10 @@
+nexus.db
+database.json
+__pycache__/
+*.pyc
+.env
+.venv
+env/
+venv/
+node_modules/
+.DS_Store

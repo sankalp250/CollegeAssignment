@@ -1,0 +1,1522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>NEXUS GAMES</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-deep: #020409;
+  --bg-mid: #060d1a;
+  --neon-blue: #00d4ff;
+  --neon-cyan: #00ffcc;
+  --neon-red: #ff2244;
+  --neon-green: #00ff88;
+  --neon-purple: #bf00ff;
+  --neon-orange: #ff6b00;
+  --glass: rgba(255,255,255,0.04);
+  --glass-border: rgba(255,255,255,0.09);
+}
+
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+
+html,body{
+  font-family:'Rajdhani',sans-serif;
+  background:var(--bg-deep);
+  color:#fff;
+  overflow:hidden;
+  height:100%;width:100%;
+  touch-action:pan-y;
+}
+
+body::before{
+  content:'';position:fixed;inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");
+  pointer-events:none;z-index:9999;
+}
+
+/* ═══ SCREENS ════════════════════════════════════ */
+.screen{position:absolute;inset:0;display:none;flex-direction:column;opacity:0;transition:opacity .35s ease;}
+.screen.active{display:flex;}
+.screen.visible{opacity:1;}
+
+/* ═══ AUTH SCREEN ════════════════════════════════ */
+#auth-screen{
+  background:
+    radial-gradient(ellipse 80% 60% at 20% 80%, rgba(0,80,180,.18) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 80% 20%, rgba(100,0,200,.12) 0%, transparent 55%),
+    var(--bg-deep);
+  align-items:center;justify-content:center;
+}
+
+.auth-bg-grid{
+  position:absolute;inset:0;
+  background-image:
+    linear-gradient(rgba(0,212,255,.04) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(0,212,255,.04) 1px,transparent 1px);
+  background-size:60px 60px;
+  mask-image:radial-gradient(ellipse 80% 80% at center,black 30%,transparent 100%);
+}
+
+.auth-box{
+  position:relative;z-index:2;
+  width:min(440px,92vw);
+  background:rgba(6,13,26,.85);
+  backdrop-filter:blur(24px);
+  border:1px solid var(--glass-border);
+  border-radius:24px;
+  padding:40px 36px 36px;
+  box-shadow:0 0 80px rgba(0,80,180,.15), 0 40px 80px rgba(0,0,0,.5);
+}
+
+.auth-logo{
+  font-family:'Orbitron',monospace;
+  font-size:22px;font-weight:900;
+  letter-spacing:6px;
+  text-align:center;margin-bottom:28px;
+  background:linear-gradient(135deg,var(--neon-cyan),var(--neon-blue));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  position:relative;
+}
+.auth-logo::after{
+  content:attr(data-text);
+  position:absolute;inset:0;text-align:center;
+  background:inherit;-webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  filter:blur(10px);opacity:.5;
+}
+
+/* tabs */
+.auth-tabs{display:flex;gap:0;margin-bottom:28px;border:1px solid var(--glass-border);border-radius:12px;overflow:hidden;}
+.auth-tab{
+  flex:1;padding:10px;text-align:center;
+  font-family:'Orbitron',monospace;font-size:12px;letter-spacing:2px;
+  cursor:pointer;background:transparent;border:none;color:rgba(255,255,255,.35);
+  transition:all .25s;
+}
+.auth-tab.active{
+  background:linear-gradient(135deg,rgba(0,80,180,.3),rgba(0,212,255,.15));
+  color:var(--neon-cyan);
+  box-shadow:inset 0 0 20px rgba(0,212,255,.1);
+}
+
+.auth-form{display:flex;flex-direction:column;gap:14px;}
+
+.field-group{display:flex;flex-direction:column;gap:6px;}
+.field-label{font-size:11px;letter-spacing:2px;color:rgba(255,255,255,.4);text-transform:uppercase;}
+
+.auth-input{
+  background:rgba(255,255,255,.05);
+  border:1px solid var(--glass-border);
+  border-radius:10px;padding:13px 16px;
+  color:#fff;font-family:'Rajdhani',sans-serif;font-size:15px;letter-spacing:.5px;
+  outline:none;transition:all .25s;width:100%;
+}
+.auth-input::placeholder{color:rgba(255,255,255,.2);}
+.auth-input:focus{
+  border-color:rgba(0,212,255,.5);
+  background:rgba(0,150,255,.06);
+  box-shadow:0 0 0 3px rgba(0,212,255,.1);
+}
+.tile-red.hit { animation: blinkDanger 0.4s 3!important; }
+@keyframes blinkDanger { 0%, 100% { background:red; } 50% { background:white; } }
+.game-header select { background:rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.1); color:var(--neon-cyan); padding:2px 8px; border-radius:4px; font-size:12px; }
+
+.auth-submit{
+  background:linear-gradient(135deg,#0066cc,var(--neon-cyan));
+  border:none;border-radius:12px;padding:14px;
+  color:#000;font-family:'Orbitron',monospace;font-size:13px;font-weight:700;
+  letter-spacing:2px;cursor:pointer;margin-top:6px;
+  transition:all .3s;
+  box-shadow:0 0 24px rgba(0,212,255,.35);
+}
+.auth-submit:hover{transform:translateY(-2px);box-shadow:0 0 40px rgba(0,212,255,.55);}
+.auth-submit:active{transform:translateY(0);}
+
+.auth-error{
+  background:rgba(255,34,68,.1);border:1px solid rgba(255,34,68,.3);
+  border-radius:8px;padding:10px 14px;
+  font-size:13px;letter-spacing:.5px;color:var(--neon-red);
+  display:none;
+}
+.auth-error.show{display:block;}
+
+.auth-divider{
+  display:flex;align-items:center;gap:12px;
+  color:rgba(255,255,255,.2);font-size:12px;letter-spacing:2px;
+}
+.auth-divider::before,.auth-divider::after{
+  content:'';flex:1;height:1px;background:var(--glass-border);
+}
+
+.auth-guest{
+  background:var(--glass);border:1px solid var(--glass-border);
+  border-radius:10px;padding:12px;
+  color:rgba(255,255,255,.5);font-size:13px;letter-spacing:1px;
+  cursor:pointer;text-align:center;transition:all .25s;
+}
+.auth-guest:hover{background:rgba(255,255,255,.08);color:rgba(255,255,255,.8);}
+
+/* user pill in header */
+.user-pill{
+  display:flex;align-items:center;gap:8px;
+  background:var(--glass);border:1px solid var(--glass-border);
+  border-radius:20px;padding:5px 14px 5px 5px;
+  font-size:13px;cursor:pointer;transition:all .2s;
+}
+.user-pill:hover{border-color:rgba(0,212,255,.3);}
+.user-avatar{
+  width:26px;height:26px;border-radius:50%;
+  background:linear-gradient(135deg,var(--neon-blue),var(--neon-cyan));
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:700;color:#000;font-family:'Orbitron',monospace;
+}
+.user-name{color:rgba(255,255,255,.7);letter-spacing:.5px;}
+
+/* ═══ SELECTION SCREEN ════════════════════════════ */
+#selection-screen{
+  background:
+    radial-gradient(ellipse 70% 50% at 15% 50%,rgba(0,40,120,.2) 0%,transparent 60%),
+    radial-gradient(ellipse 50% 40% at 85% 20%,rgba(80,0,160,.12) 0%,transparent 55%),
+    var(--bg-deep);
+}
+
+.header{
+  padding:20px 40px 18px;
+  display:flex;align-items:center;justify-content:space-between;
+  border-bottom:1px solid var(--glass-border);
+  flex-shrink:0;
+}
+
+.logo{
+  font-family:'Orbitron',monospace;font-size:24px;font-weight:900;letter-spacing:6px;
+  background:linear-gradient(135deg,var(--neon-cyan),var(--neon-blue));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  position:relative;
+}
+.logo::after{
+  content:'NEXUS GAMES';position:absolute;inset:0;
+  background:linear-gradient(135deg,var(--neon-cyan),var(--neon-blue));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  filter:blur(10px);opacity:.35;
+}
+
+.section-eyebrow{
+  padding:20px 40px 8px;
+  font-family:'Orbitron',monospace;font-size:10px;
+  letter-spacing:4px;color:rgba(255,255,255,.22);
+  flex-shrink:0;
+}
+.section-headline{
+  padding:0 40px 20px;
+  font-family:'Orbitron',monospace;font-size:clamp(26px,4vw,40px);
+  font-weight:900;line-height:1;
+  background:linear-gradient(160deg,#fff 40%,rgba(255,255,255,.35));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  flex-shrink:0;
+}
+
+/* ─── PHYSICS CAROUSEL ─── */
+.carousel-viewport{
+  flex:1;overflow:hidden;position:relative;
+  touch-action:pan-y;
+  cursor:grab;
+  min-height:0;
+  perspective: 1200px;
+}
+.carousel-viewport:active{cursor:grabbing;}
+.carousel-viewport.is-dragging{cursor:grabbing;}
+
+.carousel-track{
+  display:flex;
+  height:100%;
+  align-items:center;
+  will-change:transform;
+  user-select:none;
+  -webkit-user-select:none;
+  transform-style: preserve-3d;
+}
+
+/* Each card slot */
+.card-slot{
+  flex:0 0 auto;
+  display:flex;align-items:center;justify-content:center;
+  transition:transform .45s cubic-bezier(.25,.46,.45,.94),
+             opacity .45s ease,
+             filter .45s ease;
+  transform-style: preserve-3d;
+}
+
+.card-slot.is-active{transform:scale(1)!important;opacity:1!important;filter:none!important;}
+.card-slot.is-adjacent{transform:scale(.92)!important;opacity:.7!important;filter:brightness(.75)!important;}
+.card-slot.is-far{transform:scale(.85)!important;opacity:.45!important;filter:brightness(.55)!important;}
+
+/* When JS is mid-drag, suppress slot transitions */
+.carousel-viewport.is-dragging .card-slot{transition:none!important;}
+
+/* The actual game card */
+.game-card{
+  width:clamp(280px,36vw,340px);
+  height:clamp(360px,52vh,440px);
+  border-radius:22px;overflow:hidden;
+  position:relative;
+  border:1px solid var(--glass-border);
+  cursor:pointer;
+  box-shadow:0 20px 60px rgba(0,0,0,.5);
+  transition:border-color .3s,box-shadow .3s;
+}
+
+.is-active .game-card{
+  border-color:rgba(0,212,255,.5);
+  box-shadow:0 0 50px rgba(0,212,255,.25),0 30px 80px rgba(0,0,0,.6);
+}
+
+.card-bg{position:absolute;inset:0;background-size:cover;background-position:center;}
+.card-overlay{
+  position:absolute;inset:0;
+  background:linear-gradient(to top,rgba(0,0,0,.92) 0%,rgba(0,0,0,.35) 50%,rgba(0,0,0,.12) 100%);
+}
+.card-scanlines{
+  position:absolute;inset:0;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.025) 2px,rgba(0,0,0,.025) 4px);
+  pointer-events:none;
+}
+
+/* themes - updated with JPG assets */
+.card-lava .card-bg{background-image: url('escape_the_lava.jpg');}
+.card-color .card-bg{background-image: url('find_the_color.jpg');}
+.card-redlight .card-bg{background-image: url('red_light_green_light.jpg');}
+.card-shooter .card-bg{background-image: url('shooter.jpg');}
+
+/* card art */
+.card-art{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+
+.lava-glow{position:absolute;width:160px;height:160px;border-radius:50%;background:radial-gradient(circle,#ff6600,#ff2200 40%,transparent 70%);filter:blur(18px);bottom:32%;animation:glowPulse 2.5s ease-in-out infinite;}
+.lava-figure{position:relative;z-index:2;font-size:52px;margin-bottom:16px;filter:drop-shadow(0 0 16px rgba(255,120,0,.7));}
+.diamond-l,.diamond-r{position:absolute;bottom:12%;font-size:30px;filter:drop-shadow(0 0 8px #88ccff);}
+.diamond-l{left:10%}.diamond-r{right:10%}
+
+.color-quad{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:3px;width:90%;height:85%;padding:3px;border-radius:12px;overflow:hidden;}
+.cq-block{border-radius:6px;animation:cqPulse 3s ease-in-out infinite;}
+.cq-block:nth-child(1){background:linear-gradient(135deg,#ff0066,#ff8800);animation-delay:0s;}
+.cq-block:nth-child(2){background:linear-gradient(135deg,#0088ff,#0044cc);animation-delay:.6s;}
+.cq-block:nth-child(3){background:linear-gradient(135deg,#00cc66,#006633);animation-delay:1.2s;}
+.cq-block:nth-child(4){background:linear-gradient(135deg,#ffcc00,#ff6600);animation-delay:1.8s;}
+
+.rl-lamp{width:72px;height:72px;border-radius:50%;position:absolute;top:18%;animation:lampCycle 3s ease-in-out infinite;}
+.rl-doll{position:absolute;bottom:14%;font-size:52px;}
+
+.shooter-split{position:absolute;inset:0;background:linear-gradient(90deg,rgba(255,0,40,.22) 0%,transparent 50%,rgba(0,80,255,.22) 100%);}
+.crosshair{width:54px;height:54px;border:2.5px solid rgba(255,255,255,.75);border-radius:50%;animation:spin 5s linear infinite;position:relative;}
+.crosshair::before,.crosshair::after{content:'';position:absolute;background:rgba(255,255,255,.75);}
+.crosshair::before{width:1.5px;height:140%;left:50%;transform:translateX(-50%);top:-20%;}
+.crosshair::after{height:1.5px;width:140%;top:50%;transform:translateY(-50%);left:-20%;}
+.bot-l,.bot-r{position:absolute;bottom:18%;font-size:38px;}
+.bot-l{left:8%}.bot-r{right:8%;transform:scaleX(-1);}
+
+.card-content{position:absolute;bottom:0;left:0;right:0;padding:24px 22px 22px;z-index:3;}
+.card-badge{display:inline-block;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:4px;padding:3px 10px;font-size:10px;letter-spacing:2px;color:rgba(255,255,255,.45);margin-bottom:9px;}
+.card-title{font-family:'Orbitron',monospace;font-size:clamp(16px,2.2vw,20px);font-weight:900;line-height:1.1;margin-bottom:7px;}
+.card-desc{font-size:12px;color:rgba(255,255,255,.45);line-height:1.4;margin-bottom:13px;letter-spacing:.3px;}
+.card-meta{display:flex;gap:10px;align-items:center;}
+.meta-pill{background:rgba(255,255,255,.07);border-radius:20px;padding:4px 12px;font-size:11px;letter-spacing:1px;}
+.play-btn{
+  margin-left:auto;width:36px;height:36px;border-radius:50%;
+  background:var(--neon-cyan);border:none;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  color:#000;font-size:14px;
+  box-shadow:0 0 18px rgba(0,212,255,.5);
+  transition:transform .2s,box-shadow .2s;
+}
+.play-btn:hover{transform:scale(1.15);box-shadow:0 0 28px rgba(0,212,255,.8);}
+
+.card-lava .card-title{color:#ff8844;text-shadow:0 0 16px rgba(255,100,0,.5);}
+.card-lava .play-btn,.card-lava.is-active-card .play-btn{background:#ff5500;box-shadow:0 0 18px rgba(255,80,0,.5);}
+.card-color .card-title{background:linear-gradient(90deg,#ff3366,#ffdd00,#00ff88,#00aaff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.card-redlight .card-title{color:#00ff55;text-shadow:0 0 14px rgba(0,255,60,.5);}
+.card-redlight .play-btn{background:#00ff44;box-shadow:0 0 18px rgba(0,255,60,.5);color:#000;}
+.card-shooter .card-title{background:linear-gradient(90deg,#ff2244,#4488ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+
+/* selected checkmark */
+.card-check{
+  position:absolute;top:14px;right:14px;z-index:4;
+  width:28px;height:28px;border-radius:50%;
+  background:var(--neon-cyan);
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;color:#000;
+  box-shadow:0 0 14px var(--neon-cyan);
+  opacity:0;transform:scale(0);
+  transition:opacity .25s,transform .3s cubic-bezier(.34,1.56,.64,1);
+}
+.card-slot.is-active .card-check.visible{opacity:1;transform:scale(1);}
+
+/* ─── PROGRESS BAR ─── */
+.progress-bar-wrap{
+  padding:10px 40px 6px;flex-shrink:0;
+  display:flex;align-items:center;gap:12px;
+}
+.progress-dots{display:flex;gap:8px;margin:0 auto;}
+.pdot{
+  height:5px;border-radius:3px;
+  background:rgba(255,255,255,.18);
+  cursor:pointer;transition:all .4s cubic-bezier(.34,1.56,.64,1);
+}
+.pdot.active{background:var(--neon-cyan);box-shadow:0 0 8px var(--neon-cyan);}
+
+/* hint */
+.swipe-hint{
+  text-align:center;padding:6px 0 14px;
+  font-size:11px;letter-spacing:2px;color:rgba(255,255,255,.2);
+  flex-shrink:0;
+  animation:hintFade 4s ease forwards;
+}
+
+/* ═══ GAME SCREEN ════════════════════════════════ */
+#game-screen{
+  background:
+    radial-gradient(ellipse 60% 40% at 50% 0%,rgba(0,60,120,.15) 0%,transparent 60%),
+    var(--bg-deep);
+  overflow-y:auto;overflow-x:hidden;
+}
+
+.game-header{
+  display:flex;align-items:center;padding:14px 28px;gap:14px;
+  border-bottom:1px solid var(--glass-border);
+  position:sticky;top:0;z-index:50;
+  background:rgba(2,4,9,.92);backdrop-filter:blur(20px);
+}
+.back-btn{
+  background:var(--glass);border:1px solid var(--glass-border);
+  border-radius:10px;padding:8px 14px;
+  color:#fff;cursor:pointer;
+  font-family:'Rajdhani',sans-serif;font-size:13px;letter-spacing:1px;
+  display:flex;align-items:center;gap:6px;transition:all .2s;white-space:nowrap;
+}
+.back-btn:hover{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.18);}
+.game-title-bar{font-family:'Orbitron',monospace;font-size:clamp(13px,2vw,17px);font-weight:700;letter-spacing:2px;flex:1;}
+
+.hud{display:flex;gap:12px;align-items:center;padding:14px 28px;background:rgba(6,13,26,.8);flex-wrap:wrap;}
+.hud-card{
+  background:var(--glass);border:1px solid var(--glass-border);
+  border-radius:12px;padding:10px 18px;
+  display:flex;flex-direction:column;align-items:center;gap:1px;min-width:80px;
+}
+.hud-label{font-size:9px;letter-spacing:2px;color:rgba(255,255,255,.3);text-transform:uppercase;}
+.hud-value{font-family:'Orbitron',monospace;font-size:24px;font-weight:700;}
+.hud-score .hud-value{color:var(--neon-cyan);text-shadow:0 0 14px rgba(0,212,255,.4);}
+.hud-lives .hud-value{color:var(--neon-red);text-shadow:0 0 14px rgba(255,34,68,.4);}
+.hud-timer .hud-value{color:var(--neon-green);text-shadow:0 0 14px rgba(0,255,136,.4);}
+.hud-timer.danger .hud-value{color:var(--neon-red);animation:timerBlink .5s ease-in-out infinite;}
+.hud-target{border-color:var(--neon-purple);display:none;}
+.hud-target.show {display:flex;}
+.target-box{width:30px;height:30px;border-radius:6px;border:1px solid rgba(255,255,255,0.2);margin-top:4px;}
+
+.grid-inputs{
+  display:flex;gap:10px;margin: 0 15px;
+  background:var(--glass);padding:5px 12px;border-radius:8px;border:1px solid var(--glass-border);
+}
+.grid-input-group{display:flex;align-items:center;gap:6px;}
+.grid-input-group label{font-size:10px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:1px;}
+.grid-field{
+  width:45px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);
+  color:#fff;border-radius:4px;padding:2px 6px;font-family:'Orbitron',monospace;font-size:12px;
+}
+.grid-field:focus{outline:none;border-color:var(--neon-cyan);}
+.lives-row{display:flex;gap:3px;}
+.life-heart{font-size:15px;transition:all .3s;}
+.life-heart.gone{opacity:.18;filter:grayscale(1);}
+.pattern-btn{
+  margin-left:auto;background:var(--glass);border:1px solid var(--glass-border);
+  border-radius:10px;padding:9px 18px;color:#fff;cursor:pointer;
+  font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:600;letter-spacing:1px;
+  display:flex;align-items:center;gap:8px;transition:all .3s;white-space:nowrap;
+}
+.pattern-btn:hover{border-color:var(--neon-blue);box-shadow:0 0 14px rgba(0,150,255,.2);}
+.p-badge{
+  background:linear-gradient(135deg,var(--neon-blue),var(--neon-cyan));
+  color:#000;border-radius:5px;padding:2px 8px;
+  font-family:'Orbitron',monospace;font-size:10px;font-weight:700;
+}
+
+.legend{display:flex;gap:18px;padding:0 28px 12px;justify-content:center;flex-wrap:wrap;}
+.legend-item{display:flex;align-items:center;gap:6px;font-size:12px;letter-spacing:.5px;color:rgba(255,255,255,.45);}
+.ldot{width:11px;height:11px;border-radius:3px;}
+.ldot.b{background:#0066cc;box-shadow:0 0 5px rgba(0,100,255,.5);}
+.ldot.r{background:#660022;box-shadow:0 0 5px rgba(255,34,68,.5);}
+.ldot.g{background:#005533;box-shadow:0 0 5px rgba(0,180,80,.5);}
+
+.grid-container{display:flex;justify-content:center;padding:8px 28px 28px;overflow:auto;}
+.grid-wrap{position:relative;}
+.grid{
+  display:grid;gap:4px;padding:14px;
+  background:rgba(6,13,26,.6);
+  border:1px solid var(--glass-border);
+  border-radius:16px;
+}
+.tile{
+  width:clamp(38px,5vw,52px);height:clamp(38px,5vw,52px);
+  border-radius:8px;border:1px solid rgba(255,255,255,.06);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  font-size:clamp(11px,1.5vw,15px);
+  transition:transform .12s,box-shadow .12s;
+  position:relative;
+}
+.tile:hover{transform:scale(1.1);z-index:5;}
+.tile-neutral{background:linear-gradient(135deg,#0a1628,#162035);border-color:rgba(80,120,200,.1);}
+.tile-blue{
+  background:linear-gradient(135deg,#002855,#0055aa);
+  border-color:rgba(0,130,255,.4);
+  box-shadow:0 0 8px rgba(0,90,255,.3);
+}
+.tile-blue:hover{box-shadow:0 0 22px rgba(0,140,255,.7);}
+.tile-red{
+  background:linear-gradient(135deg,#280010,#550022);
+  border-color:rgba(255,34,68,.4);
+  animation:redGlow 1.4s ease-in-out infinite;
+}
+.tile-red:hover{box-shadow:0 0 22px rgba(255,34,68,.8);}
+.tile-green{
+  background:linear-gradient(135deg,#002818,#004d2a);
+  border-color:rgba(0,180,80,.4);
+  box-shadow:0 0 8px rgba(0,150,60,.25);
+}
+.tile-green:hover{box-shadow:0 0 22px rgba(0,200,80,.7);}
+.tile-collected{background:linear-gradient(135deg,#050e1a,#0a1528);border-color:rgba(0,80,120,.15);opacity:.35;cursor:default;}
+.tile-collected:hover{transform:none;}
+
+.start-overlay{
+  position:absolute;inset:0;
+  background:rgba(2,4,9,.88);backdrop-filter:blur(6px);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:20px;border-radius:16px;z-index:10;
+}
+.start-overlay h2{font-family:'Orbitron',monospace;font-size:22px;letter-spacing:4px;color:rgba(255,255,255,.75);}
+
+/* ═══ MODALS ════════════════════════════════════ */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.82);backdrop-filter:blur(10px);
+  display:none;align-items:center;justify-content:center;z-index:200;
+}
+.modal-overlay.open{display:flex;animation:fadeIn .3s ease;}
+.modal{
+  background:linear-gradient(135deg,#050d1a,#091520);
+  border:1px solid rgba(255,255,255,.1);border-radius:22px;
+  padding:44px;text-align:center;max-width:420px;width:90%;
+  animation:modalPop .4s cubic-bezier(.34,1.56,.64,1);
+}
+.modal-icon{font-size:58px;margin-bottom:14px;display:block;}
+.modal-title{font-family:'Orbitron',monospace;font-size:28px;font-weight:900;margin-bottom:10px;letter-spacing:2px;}
+.modal-win .modal-title{color:var(--neon-cyan);text-shadow:0 0 26px rgba(0,212,255,.4);}
+.modal-lose .modal-title{color:var(--neon-red);text-shadow:0 0 26px rgba(255,34,68,.4);}
+.modal-sub{font-size:15px;color:rgba(255,255,255,.55);margin-bottom:28px;letter-spacing:.5px;}
+.modal-sub span{color:var(--neon-cyan);font-family:'Orbitron',monospace;font-size:22px;font-weight:700;}
+.modal-actions{display:flex;gap:10px;justify-content:center;}
+
+.btn-primary{
+  background:linear-gradient(135deg,#0055aa,var(--neon-cyan));
+  color:#000;border:none;border-radius:11px;padding:13px 28px;
+  font-family:'Orbitron',monospace;font-size:12px;font-weight:700;letter-spacing:2px;
+  cursor:pointer;box-shadow:0 0 20px rgba(0,212,255,.35);transition:all .25s;
+}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 0 30px rgba(0,212,255,.6);}
+.btn-secondary{
+  background:var(--glass);color:rgba(255,255,255,.65);
+  border:1px solid var(--glass-border);border-radius:11px;padding:13px 28px;
+  font-family:'Orbitron',monospace;font-size:12px;font-weight:700;letter-spacing:2px;
+  cursor:pointer;transition:all .25s;
+}
+.btn-secondary:hover{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.2);}
+
+/* ═══ TOAST ════════════════════════════════════ */
+.toast{
+  position:fixed;bottom:28px;left:50%;
+  transform:translateX(-50%) translateY(70px);
+  background:rgba(6,13,26,.95);backdrop-filter:blur(16px);
+  border:1px solid var(--glass-border);border-radius:10px;
+  padding:10px 22px;font-family:'Orbitron',monospace;font-size:12px;letter-spacing:2px;
+  z-index:300;transition:transform .3s cubic-bezier(.34,1.56,.64,1);pointer-events:none;
+}
+.toast.show{transform:translateX(-50%) translateY(0);}
+.toast.ok{border-color:var(--neon-cyan);color:var(--neon-cyan);}
+.toast.bad{border-color:var(--neon-red);color:var(--neon-red);}
+
+/* ═══ KEYFRAMES ════════════════════════════════ */
+@keyframes glowPulse{0%,100%{opacity:.55;transform:scale(1);}50%{opacity:1;transform:scale(1.2);}}
+@keyframes cqPulse{0%,100%{filter:brightness(.9);}50%{filter:brightness(1.2);}}
+@keyframes lampCycle{
+  0%,40%{background:radial-gradient(circle,#ff2244,#880011);box-shadow:0 0 30px #ff2244;}
+  50%,90%{background:radial-gradient(circle,#00ff55,#004422);box-shadow:0 0 30px #00ff55;}
+  100%{background:radial-gradient(circle,#ff2244,#880011);box-shadow:0 0 30px #ff2244;}
+}
+@keyframes spin{to{transform:rotate(360deg);}}
+@keyframes redGlow{0%,100%{box-shadow:0 0 8px rgba(255,34,68,.25);}50%{box-shadow:0 0 18px rgba(255,34,68,.75),0 0 32px rgba(255,34,68,.2);}}
+@keyframes timerBlink{0%,100%{opacity:1;}50%{opacity:.25;}}
+@keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+@keyframes modalPop{from{opacity:0;transform:scale(.8) translateY(20px);}to{opacity:1;transform:scale(1) translateY(0);}}
+@keyframes hintFade{0%,60%{opacity:1;}100%{opacity:0;}}
+@keyframes glitch{0%,94%,100%{text-shadow:none;}95%{text-shadow:-2px 0 #ff0066,2px 0 #00ffcc;}97%{text-shadow:2px 0 #ff0066,-2px 0 #00ffcc;}}
+
+/* particles */
+.particle{position:fixed;width:2px;height:2px;border-radius:50%;pointer-events:none;opacity:0;animation:particleFloat linear infinite;}
+@keyframes particleFloat{
+  0%{opacity:0;transform:translateY(100vh);}
+  8%{opacity:.5;}88%{opacity:.25;}
+  100%{opacity:0;transform:translateY(-80px) translateX(20px);}
+}
+
+/* ─── profile dropdown ─── */
+.profile-menu{
+  position:absolute;top:calc(100% + 8px);right:0;
+  background:rgba(6,13,26,.96);backdrop-filter:blur(16px);
+  border:1px solid var(--glass-border);border-radius:12px;
+  padding:8px;min-width:180px;z-index:100;
+  display:none;flex-direction:column;gap:2px;
+  animation:fadeIn .2s ease;
+}
+.profile-menu.open{display:flex;}
+.pm-item{
+  padding:10px 14px;border-radius:8px;cursor:pointer;
+  font-size:13px;letter-spacing:.5px;color:rgba(255,255,255,.65);
+  transition:all .2s;display:flex;align-items:center;gap:10px;
+}
+.pm-item:hover{background:var(--glass);color:#fff;}
+.pm-item.danger{color:var(--neon-red);}
+.pm-item.danger:hover{background:rgba(255,34,68,.08);}
+.profile-wrap{position:relative;}
+
+/* resume banner */
+.resume-banner{
+  margin:0 40px 8px;
+  background:linear-gradient(135deg,rgba(0,80,180,.15),rgba(0,212,255,.08));
+  border:1px solid rgba(0,212,255,.2);
+  border-radius:12px;padding:12px 18px;
+  display:none;align-items:center;gap:14px;
+  flex-shrink:0;
+}
+.resume-banner.show{display:flex;}
+.resume-banner span{flex:1;font-size:13px;color:rgba(255,255,255,.6);letter-spacing:.5px;}
+.resume-banner strong{color:var(--neon-cyan);}
+.resume-btn{
+  background:var(--neon-cyan);color:#000;border:none;
+  border-radius:8px;padding:7px 16px;font-family:'Orbitron',monospace;
+  font-size:10px;font-weight:700;letter-spacing:1px;cursor:pointer;
+  transition:all .2s;white-space:nowrap;
+}
+.resume-btn:hover{box-shadow:0 0 16px rgba(0,212,255,.5);}
+/* video preview */
+.video-preview-overlay{
+  position:absolute;inset:0;z-index:0;
+  opacity:0;transition:opacity .6s ease;
+  pointer-events:none;overflow:hidden;
+}
+.video-preview-overlay.active{opacity:0.4;}
+.video-preview-overlay video{
+  width:100%;height:100%;object-fit:cover;
+  filter:blur(10px) brightness(0.6);
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════
+     AUTH SCREEN
+═══════════════════════════════════════════ -->
+<div id="auth-screen" class="screen">
+  <div class="auth-bg-grid"></div>
+  <div class="auth-box">
+    <div class="auth-logo" data-text="NEXUS GAMES">NEXUS GAMES</div>
+
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tab-login" onclick="switchTab('login')">LOGIN</button>
+      <button class="auth-tab" id="tab-register" onclick="switchTab('register')">REGISTER</button>
+    </div>
+
+    <!-- Login Form -->
+    <form class="auth-form" id="login-form" onsubmit="handleLogin(event)">
+      <div id="login-error" class="auth-error"></div>
+      <div class="field-group">
+        <label class="field-label">Email</label>
+        <input type="email" id="login-email" class="auth-input" placeholder="you@example.com" required autocomplete="email">
+      </div>
+      <div class="field-group">
+        <label class="field-label">Password</label>
+        <input type="password" id="login-password" class="auth-input" placeholder="••••••••" required autocomplete="current-password">
+      </div>
+      <button type="submit" class="auth-submit">ENTER THE ARENA</button>
+      <div class="auth-divider">OR</div>
+      <div class="auth-guest" onclick="guestLogin()">⚡ Continue as Guest</div>
+    </form>
+
+    <!-- Register Form -->
+    <form class="auth-form" id="register-form" style="display:none" onsubmit="handleRegister(event)">
+      <div id="register-error" class="auth-error"></div>
+      <div class="field-group">
+        <label class="field-label">Username</label>
+        <input type="text" id="reg-username" class="auth-input" placeholder="CoolPlayer99" required autocomplete="username">
+      </div>
+      <div class="field-group">
+        <label class="field-label">Email</label>
+        <input type="email" id="reg-email" class="auth-input" placeholder="you@example.com" required autocomplete="email">
+      </div>
+      <div class="field-group">
+        <label class="field-label">Password</label>
+        <input type="password" id="reg-password" class="auth-input" placeholder="Min 6 characters" required autocomplete="new-password">
+      </div>
+      <button type="submit" class="auth-submit">CREATE ACCOUNT</button>
+      <div class="auth-divider">OR</div>
+      <div class="auth-guest" onclick="guestLogin()">⚡ Continue as Guest</div>
+    </form>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════
+     SELECTION SCREEN
+═══════════════════════════════════════════ -->
+<div id="selection-screen" class="screen">
+  <div class="video-preview-overlay" id="videoPreview">
+    <video id="previewVideo" loop muted playsinline>
+      <source src="game_selection_ui.mp4" type="video/mp4">
+    </video>
+  </div>
+  <div class="header">
+    <div class="logo">NEXUS GAMES</div>
+    <div class="profile-wrap">
+      <div class="user-pill" id="userPill" onclick="toggleProfileMenu()">
+        <div class="user-avatar" id="userAvatar">?</div>
+        <div class="user-name" id="userName">PLAYER</div>
+      </div>
+      <div class="profile-menu" id="profileMenu">
+        <div class="pm-item">👤 Profile</div>
+        <div class="pm-item">🏆 Leaderboard</div>
+        <div class="pm-item">⚙️ Settings</div>
+        <div class="pm-item danger" onclick="logout()">⏻ Logout</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Resume Banner -->
+  <div class="resume-banner" id="resumeBanner">
+    <span>📍 Resume: <strong id="resumeGameName">—</strong> · Score <strong id="resumeScore">—</strong></span>
+    <button class="resume-btn" onclick="resumeGame()">RESUME →</button>
+  </div>
+
+  <div class="section-eyebrow">// CHOOSE YOUR GAME</div>
+  <div class="section-headline">GAME<br>SELECTION</div>
+
+  <!-- PHYSICS CAROUSEL -->
+  <div class="carousel-viewport" id="carouselViewport">
+    <div class="carousel-track" id="carouselTrack">
+
+      <!-- SLOT 0 → LAVA -->
+      <div class="card-slot" id="slot-0">
+        <div class="game-card card-lava" onclick="cardClick(0,'lava')">
+          <div class="card-bg"></div>
+          <div class="card-art">
+            <div class="lava-glow"></div>
+            <div class="lava-figure">🧍</div>
+            <div class="diamond-l">💎</div><div class="diamond-r">💎</div>
+          </div>
+          <div class="card-overlay"></div>
+          <div class="card-scanlines"></div>
+          <div class="card-check visible" id="check-0">✓</div>
+          <div class="card-content">
+            <div class="card-badge">● ACTIVE</div>
+            <div class="card-title">ESCAPE<br>THE LAVA</div>
+            <div class="card-desc">Navigate the burning grid. Collect diamonds before the lava rises.</div>
+            <div class="card-meta">
+              <div class="meta-pill">⏱ 30s</div>
+              <div class="meta-pill">❤️ 5 LIVES</div>
+              <button class="play-btn" onclick="event.stopPropagation();startGame('lava')">▶</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLOT 1 → COLOR -->
+      <div class="card-slot" id="slot-1">
+        <div class="game-card card-color" onclick="cardClick(1,'color')">
+          <div class="card-bg"></div>
+          <div class="card-art">
+            <div class="color-quad">
+              <div class="cq-block"></div><div class="cq-block"></div>
+              <div class="cq-block"></div><div class="cq-block"></div>
+            </div>
+          </div>
+          <div class="card-overlay"></div>
+          <div class="card-scanlines"></div>
+          <div class="card-check" id="check-1">✓</div>
+          <div class="card-content">
+            <div class="card-badge">◐ UNLOCKED</div>
+            <div class="card-title">FIND THE<br>COLOR</div>
+            <div class="card-desc">Identify matching colors at lightning speed. Every second counts.</div>
+            <div class="card-meta">
+              <div class="meta-pill">⚡ FAST</div>
+              <div class="meta-pill">🎨 COLOR</div>
+              <button class="play-btn" style="background:linear-gradient(135deg,#ff3366,#ffdd00);" onclick="event.stopPropagation();startGame('color')">▶</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLOT 2 → REDLIGHT -->
+      <div class="card-slot" id="slot-2">
+        <div class="game-card card-redlight" onclick="cardClick(2,'redlight')">
+          <div class="card-bg"></div>
+          <div class="card-art">
+            <div class="rl-lamp"></div>
+            <div class="rl-doll">🎎</div>
+          </div>
+          <div class="card-overlay"></div>
+          <div class="card-scanlines"></div>
+          <div class="card-check" id="check-2" style="background:var(--neon-green);box-shadow:0 0 14px var(--neon-green);">✓</div>
+          <div class="card-content">
+            <div class="card-badge">● HOT</div>
+            <div class="card-title">RED LIGHT<br>GREEN LIGHT</div>
+            <div class="card-desc">Move on green. Freeze on red. One mistake ends everything.</div>
+            <div class="card-meta">
+              <div class="meta-pill">💀 DEADLY</div>
+              <div class="meta-pill">⏱ TIMED</div>
+              <button class="play-btn" style="background:#00ff44;" onclick="event.stopPropagation();startGame('redlight')">▶</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLOT 3 → SHOOTER -->
+      <div class="card-slot" id="slot-3">
+        <div class="game-card card-shooter" onclick="cardClick(3,'shooter')">
+          <div class="card-bg"></div>
+          <div class="card-art">
+            <div class="shooter-split"></div>
+            <div class="crosshair"></div>
+            <div class="bot-l">🤖</div>
+            <div class="bot-r">🤖</div>
+          </div>
+          <div class="card-overlay"></div>
+          <div class="card-scanlines"></div>
+          <div class="card-check" id="check-3" style="background:linear-gradient(135deg,#ff2244,#4488ff);">✓</div>
+          <div class="card-content">
+            <div class="card-badge">● ACTIVE</div>
+            <div class="card-title">SHARP<br>SHOOTER</div>
+            <div class="card-desc">Precision targeting. Neon battleground. Red vs Blue.</div>
+            <div class="card-meta">
+              <div class="meta-pill">🎯 AIM</div>
+              <div class="meta-pill">⚔️ PVP</div>
+              <button class="play-btn" style="background:linear-gradient(135deg,#ff2244,#4488ff);" onclick="event.stopPropagation();startGame('shooter')">▶</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Progress Dots -->
+  <div class="progress-bar-wrap">
+    <div class="progress-dots" id="progressDots">
+      <div class="pdot active" style="width:24px" onclick="snapTo(0)"></div>
+      <div class="pdot" style="width:6px" onclick="snapTo(1)"></div>
+      <div class="pdot" style="width:6px" onclick="snapTo(2)"></div>
+      <div class="pdot" style="width:6px" onclick="snapTo(3)"></div>
+    </div>
+  </div>
+
+  <div class="swipe-hint" id="swipeHint">← SWIPE TO EXPLORE →</div>
+</div>
+
+
+<!-- ══════════════════════════════════════════
+     GAME SCREEN
+═══════════════════════════════════════════ -->
+<div id="game-screen" class="screen">
+  <div class="game-header">
+    <button class="back-btn" onclick="goBack()">← BACK</button>
+    <div class="game-title-bar" id="gameTitle">ESCAPE THE LAVA</div>
+    
+    <div class="grid-inputs">
+      <div class="hud-item flex-center" style="gap:4px">
+        <label>PATTERN</label>
+        <select id="selectPattern" onchange="app.pattern = parseInt(this.value); updateGridSize()">
+          <option value="1">1</option>
+          <option value="2">2</option>
+        </select>
+      </div>
+      <div class="hud-item flex-center" style="gap:4px">
+        <label>ROWS</label>
+        <input type="number" id="inputRows" class="grid-field" value="10" min="10" max="25" onchange="updateGridSize()">
+      </div>
+      <div class="grid-input-group">
+        <label>Cols</label>
+        <input type="number" id="inputCols" class="grid-field" value="10" min="10" max="25" onchange="updateGridSize()">
+      </div>
+    </div>
+
+    <div style="font-size:11px;letter-spacing:2px;color:rgba(255,255,255,.25);">Q01</div>
+  </div>
+
+  <div class="hud">
+    <div class="hud-card hud-score">
+      <div class="hud-label">SCORE</div>
+      <div class="hud-value" id="scoreDisplay">000</div>
+    </div>
+    <div class="hud-card hud-lives">
+      <div class="hud-label">LIVES</div>
+      <div class="lives-row" id="livesRow">
+        <span class="life-heart">❤️</span><span class="life-heart">❤️</span>
+        <span class="life-heart">❤️</span><span class="life-heart">❤️</span>
+        <span class="life-heart">❤️</span>
+      </div>
+    </div>
+    <div class="hud-card hud-timer" id="timerCard">
+      <div class="hud-label">TIME</div>
+      <div class="hud-value" id="timerDisplay">30</div>
+    </div>
+    <div class="hud-card hud-target" id="targetHUD">
+      <div class="hud-label">TARGET</div>
+      <div class="target-box" id="targetColorBox"></div>
+    </div>
+    <div class="hud-card hud-status" id="statusHUD" style="display:none; border-color:var(--neon-green);">
+      <div class="hud-label">LIGHT</div>
+      <div class="hud-value" id="statusDisplay" style="font-size:18px;">RUN</div>
+    </div>
+    <button class="pattern-btn" id="patternBtn" onclick="togglePattern()">
+      PATTERN <div class="p-badge" id="patternBadge">P1</div>
+    </button>
+  </div>
+
+  <div class="legend">
+    <div class="legend-item"><div class="ldot b"></div>COLLECT (BLUE)</div>
+    <div class="legend-item"><div class="ldot r"></div>AVOID (RED)</div>
+    <div class="legend-item"><div class="ldot g"></div>SAFE (GREEN)</div>
+  </div>
+
+  <div class="grid-container">
+    <div class="grid-wrap">
+      <div class="grid" id="gameGrid"></div>
+      <div class="start-overlay" id="startOverlay">
+        <h2>READY?</h2>
+        <button class="btn-primary" onclick="startRound()">▶ START</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- WIN -->
+<div class="modal-overlay" id="winModal">
+  <div class="modal modal-win">
+    <span class="modal-icon">🏆</span>
+    <div class="modal-title">VICTORY!</div>
+    <div class="modal-sub">SCORE <span id="winScore">0</span></div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal('winModal');goBack()">MENU</button>
+      <button class="btn-primary" onclick="restartGame()">PLAY AGAIN</button>
+    </div>
+  </div>
+</div>
+
+<!-- LOSE -->
+<div class="modal-overlay" id="loseModal">
+  <div class="modal modal-lose">
+    <span class="modal-icon" id="loseIcon">💀</span>
+    <div class="modal-title" id="loseTitle">GAME OVER</div>
+    <div class="modal-sub">SCORE <span id="loseScore">0</span></div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal('loseModal');goBack()">MENU</button>
+      <button class="btn-primary" onclick="restartGame()">RETRY</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- ══════════════════════════════════════════════════════════
+     JAVASCRIPT
+═══════════════════════════════════════════════════════════ -->
+<script>
+/* ─────────────────────────────────────────────────────────
+   CONFIG & APP STATE
+───────────────────────────────────────────────────────── */
+const API_BASE = 'http://localhost:8000'; 
+
+const app = {
+  user: null, progress: null,
+  selectedGame: null, currentGame: null,
+  score: 0, lives: 5, timer: 30,
+  pattern: 1, grid: [],
+  timerInterval: null, gameRunning: false,
+  rows: 10, cols: 10,
+  blueTotal: 0, blueCollected: 0,
+  
+  // -- Modular Game State --
+  lavaInterval: null, lavaRow: 0,
+  rlglState: 'green', rlglInterval: null,
+  targetColor: null, colorPool: ['#00d4ff','#ff2244','#00ff88','#bf00ff','#ff6b00','#ffdd00'],
+  shooterInterval: null, spawnRate: 1200,
+};
+
+/* ─────────────────────────────────────────────────────────
+   PARTICLES & SCREEN TRANSITIONS
+───────────────────────────────────────────────────────── */
+(function spawnParticles() {
+  const colors = ['var(--neon-cyan)','var(--neon-blue)','var(--neon-green)','var(--neon-purple)'];
+  for (let i = 0; i < 22; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    p.style.cssText = `left:${Math.random()*100}vw; animation-delay:${Math.random()*10}s; animation-duration:${7 + Math.random()*7}s; background:${colors[i%colors.length]};`;
+    document.body.appendChild(p);
+  }
+})();
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active','visible'));
+  const el = document.getElementById(id);
+  if (!el) return console.error("Screen not found:", id);
+  el.classList.add('active');
+  requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add('visible')));
+}
+
+/* ─────────────────────────────────────────────────────────
+   AUTH — UI & HANDLERS
+───────────────────────────────────────────────────────── */
+function switchTab(tab) {
+  document.getElementById('tab-login').classList.toggle('active', tab==='login');
+  document.getElementById('tab-register').classList.toggle('active', tab==='register');
+  document.getElementById('login-form').style.display = tab==='login' ? 'flex' : 'none';
+  document.getElementById('register-form').style.display = tab==='register' ? 'flex' : 'none';
+}
+
+async function handleLogin(e) {
+  e.preventDefault();
+  const email = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value;
+  const errEl = document.getElementById('login-error');
+  errEl.classList.remove('show');
+  try {
+    const r = await fetch(`${API_BASE}/login`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ email, password })
+    });
+    if (!r.ok) {
+        if (r.status === 401) errEl.textContent = 'Invalid credentials or account missing after update. Please Register.';
+        else errEl.textContent = 'Server error. Please try again.';
+        errEl.classList.add('show');
+        return;
+    }
+    const user = await r.json();
+    loginSuccess({ username: user.username, email, token: user.access_token });
+  } catch (e) {
+    errEl.textContent = 'Cannot connect to server. Ensure main.py is running.';
+    errEl.classList.add('show');
+  }
+}
+
+async function handleRegister(e) {
+  e.preventDefault();
+  const username = document.getElementById('reg-username').value.trim();
+  const email    = document.getElementById('reg-email').value.trim();
+  const password = document.getElementById('reg-password').value;
+  const errEl    = document.getElementById('register-error');
+  if (password.length < 6) { errEl.textContent = 'Password min 6 chars'; errEl.classList.add('show'); return; }
+  
+  try {
+    const r = await fetch(`${API_BASE}/register`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ username, email, password })
+    });
+    if (!r.ok) {
+        const d = await r.json();
+        errEl.textContent = d.detail || 'Registration failed';
+        errEl.classList.add('show');
+        return;
+    }
+    // Auto-login after register
+    const lr = await fetch(`${API_BASE}/login`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ email, password })
+    });
+    const ld = await lr.json();
+    loginSuccess({ username: ld.username, email, token: ld.access_token });
+  } catch (e) {
+    errEl.textContent = 'Cannot connect to server.';
+    errEl.classList.add('show');
+  }
+}
+
+function guestLogin() { 
+  loginSuccess({ username: 'GUEST_' + Math.floor(Math.random()*9000+1000), email: '', token: null, isGuest: true }); 
+}
+
+function loginSuccess(user) {
+  app.user = user;
+  if (user.token) localStorage.setItem('nexus_token', user.token);
+  localStorage.setItem('nexus_user', JSON.stringify({ username: user.username, email: user.email }));
+  renderUserUI(); loadProgress();
+  showScreen('selection-screen');
+  initCarousel();
+}
+
+function logout() {
+  app.user = null; app.progress = null;
+  localStorage.removeItem('nexus_token'); localStorage.removeItem('nexus_user');
+  location.reload(); 
+}
+
+/* ─────────────────────────────────────────────────────────
+   MOCK DB (LOCALSTORAGE)
+───────────────────────────────────────────────────────── */
+function localRegister(username, email, password) {
+  const db = JSON.parse(localStorage.getItem('nexus_db') || '{}');
+  db[email] = { username, password, progress: null };
+  localStorage.setItem('nexus_db', JSON.stringify(db));
+}
+
+function localLogin(email, password) {
+  const db = JSON.parse(localStorage.getItem('nexus_db') || '{}');
+  const rec = db[email];
+  if (!rec || rec.password !== password) return null;
+  return { username: rec.username, email, token: btoa(email+':'+Date.now()) };
+}
+
+function validateStoredToken() {
+  const token = localStorage.getItem('nexus_token');
+  const user = localStorage.getItem('nexus_user');
+  if (token && user) {
+    app.user = { ...JSON.parse(user), token };
+    return true;
+  }
+  return false;
+}
+
+/* ─────────────────────────────────────────────────────────
+   PROGRESS & API
+───────────────────────────────────────────────────────── */
+async function apiSaveProgress(prog) {
+  if (!app.user?.token) return;
+  try {
+    const r = await fetch(`${API_BASE}/save-progress`, {
+      method:'POST', headers:{'Content-Type':'application/json','Authorization':`Bearer ${app.user.token}`},
+      body: JSON.stringify(prog)
+    });
+    if (r.status === 401) { logout(); return; }
+    return r;
+  } catch(e) { console.error("Save progress error:", e); }
+}
+
+async function loadProgress() {
+  if (!app.user?.token) return;
+  try {
+    const r = await fetch(`${API_BASE}/progress`, {
+      headers:{'Authorization':`Bearer ${app.user.token}`}
+    });
+    if (r.status === 401) { logout(); return; }
+    const d = await r.json();
+    if (d.progress) { app.progress = d.progress; showResumeBanner(); }
+  } catch(e) {}
+}
+
+/* ─────────────────────────────────────────────────────────
+   PROFILE UI
+───────────────────────────────────────────────────────── */
+function renderUserUI() {
+  const u = app.user;
+  document.getElementById('userName').textContent = u.username.substring(0,10).toUpperCase();
+  document.getElementById('userAvatar').textContent = u.username[0].toUpperCase();
+}
+
+function toggleProfileMenu(forceClose) {
+  const m = document.getElementById('profileMenu');
+  if (forceClose === false || m.classList.contains('open')) m.classList.remove('open');
+  else m.classList.add('open');
+}
+
+/* ─────────────────────────────────────────────────────────
+   CAROUSEL ENGINE (3D + INERTIA)
+───────────────────────────────────────────────────────── */
+const carousel = {
+  currentIndex: 0, totalCards: 4, isDragging: false,
+  startX: 0, startY: 0, startTime: 0, currentX: 0,
+  trackOffset: 0, cardWidth: 0, cardGap: 0, cardStride: 0,
+  viewport: null, track: null, initialized: false,
+};
+
+function initCarousel() {
+  if (carousel.initialized) { updateCarouselLayout(); return; }
+  carousel.viewport = document.getElementById('carouselViewport');
+  carousel.track    = document.getElementById('carouselTrack');
+  updateCarouselLayout();
+  carousel.viewport.addEventListener('pointerdown', onDragStart, { passive: true });
+  window.addEventListener('pointermove', onDragMove, { passive: true });
+  window.addEventListener('pointerup', onDragEnd);
+  window.addEventListener('resize', updateCarouselLayout);
+  carousel.initialized = true;
+  snapTo(0, false);
+}
+
+function updateCarouselLayout() {
+  const vw = carousel.viewport.offsetWidth || window.innerWidth;
+  const cardEl = document.querySelector('.game-card');
+  carousel.cardWidth  = cardEl ? cardEl.offsetWidth : 300;
+  carousel.cardGap    = Math.round(vw * 0.05);
+  carousel.cardStride = carousel.cardWidth + carousel.cardGap;
+  document.querySelectorAll('.card-slot').forEach(s => {
+    s.style.paddingLeft = s.style.paddingRight = (carousel.cardGap/2)+'px';
+  });
+  snapTo(carousel.currentIndex, false);
+}
+
+function onDragStart(e) {
+  if (e.target.closest('button')) return;
+  carousel.isDragging = true;
+  carousel.startX = e.clientX; carousel.startTime = Date.now();
+  carousel.viewport.classList.add('is-dragging');
+  carousel.track.style.transition = 'none';
+}
+
+function onDragMove(e) {
+  if (!carousel.isDragging) return;
+  const dx = e.clientX - carousel.startX;
+  carousel.currentX = dx;
+  setTrackX(carousel.trackOffset + dx, dx * 0.06);
+}
+
+function onDragEnd() {
+  if (!carousel.isDragging) return;
+  carousel.isDragging = false;
+  carousel.viewport.classList.remove('is-dragging');
+  const vel = carousel.currentX / (Date.now() - carousel.startTime);
+  let next = carousel.currentIndex;
+  if (Math.abs(vel) > 0.3 || Math.abs(carousel.currentX) > carousel.cardStride * 0.3) {
+    next = vel < 0 ? Math.min(next + 1, 3) : Math.max(next - 1, 0);
+  }
+  snapTo(next);
+}
+
+function snapTo(idx, anim = true) {
+  carousel.currentIndex = idx;
+  const vw = carousel.viewport.offsetWidth || window.innerWidth;
+  carousel.trackOffset = (vw/2) - (carousel.cardWidth/2) - idx * carousel.cardStride;
+  carousel.track.style.transition = anim ? 'transform 0.5s cubic-bezier(0.18, 0.89, 0.32, 1.28)' : 'none';
+  setTrackX(carousel.trackOffset, 0);
+  updateSlotScales(idx);
+  updateProgressDots(idx);
+}
+
+function setTrackX(x, rot = 0) { carousel.track.style.transform = `translateX(${x}px) rotateY(${rot}deg)`; }
+
+function updateSlotScales(activeIdx) {
+  document.querySelectorAll('.card-slot').forEach((slot, i) => {
+    slot.classList.remove('is-active','is-adjacent','is-far');
+    const d = Math.abs(i - activeIdx);
+    if (d === 0) slot.classList.add('is-active');
+    else if (d === 1) slot.classList.add('is-adjacent');
+    else slot.classList.add('is-far');
+  });
+}
+
+function updateProgressDots(idx) {
+  document.querySelectorAll('.pdot').forEach((d, i) => {
+    d.classList.toggle('active', i === idx);
+    d.style.width = i === idx ? '24px' : '6px';
+  });
+}
+
+function cardClick(idx, game) {
+  if (idx !== carousel.currentIndex) { snapTo(idx); return; }
+  const v = document.getElementById('previewVideo');
+  document.getElementById('videoPreview').classList.add('active');
+  v.play().catch(()=>{});
+  app.selectedGame = game;
+  document.querySelectorAll('.card-check').forEach((c,i) => c.classList.toggle('visible', i === idx));
+}
+
+/* ─────────────────────────────────────────────────────────
+   GAME CONTROLLER SYSTEM
+───────────────────────────────────────────────────────── */
+function startGame(type) {
+  app.currentGame = type;
+  document.getElementById('gameTitle').textContent = type.toUpperCase().replace('_',' ');
+  document.getElementById('targetHUD').classList.toggle('show', type === 'color');
+  document.getElementById('statusHUD').style.display = (type === 'redlight') ? 'flex' : 'none';
+  document.getElementById('patternBtn').style.display = (type === 'lava' || type === 'pattern') ? 'flex' : 'none';
+  showScreen('game-screen');
+  resetGame();
+  generateGrid();
+}
+
+function updateGridSize() {
+  app.rows = parseInt(document.getElementById('inputRows').value) || 10;
+  app.cols = parseInt(document.getElementById('inputCols').value) || 10;
+  resetGame();
+  generateGrid();
+}
+
+function generateGrid() {
+  const type = app.currentGame;
+  let blues = 0;
+  if (type === 'color') pickNewTargetColor();
+  app.grid = Array.from({length: app.rows}, (_, r) => 
+    Array.from({length: app.cols}, (_, c) => {
+      let t = 'green';
+      if (type === 'lava' || type === 'pattern') {
+        const isPattern1 = app.pattern === 1;
+        if (isPattern1) {
+          // Checkerboard of Red/Green with Blue Diamonds spread out
+          const isDiamond = (r+c) % 7 === 0 && (r > 0 && r < app.rows-1);
+          t = isDiamond ? 'blue' : ( (r+c)%2===0 ? 'red' : 'green' );
+        } else {
+          // Cross of Diamonds, denser hazards
+          const isCross = (r===c || r+c===app.rows-1);
+          t = isCross ? 'blue' : ( (r*c)%3===0 ? 'red' : 'green' );
+        }
+      } else if (type === 'color') {
+        t = app.colorPool[Math.floor(Math.random()*app.colorPool.length)];
+      } else if (type === 'redlight') {
+        t = (r === 0) ? 'blue' : 'green';
+      } else if (type === 'shooter') {
+        t = 'green';
+      }
+      if (t === 'blue' || t === app.targetColor) blues++;
+      return { type: t, collected: false, element: null };
+    })
+  );
+  if (type === 'shooter') { 
+    app.blueTotal = 15;
+    app.blueCollected = 0;
+  } else {
+    app.blueTotal = blues || 1;
+  }
+  renderGrid();
+  document.getElementById('startOverlay').style.display = 'flex';
+}
+
+function renderGrid() {
+  const grid = document.getElementById('gameGrid');
+  const ts = Math.min(50, Math.floor((window.innerWidth - 100) / app.cols));
+  grid.style.gridTemplateColumns = `repeat(${app.cols}, ${ts}px)`;
+  grid.innerHTML = '';
+  app.grid.forEach((row, r) => row.forEach((tile, c) => {
+    const el = document.createElement('div');
+    el.id = `tile-${r}-${c}`;
+    const baseType = (tile.type === 'red' || tile.type === 'blue' || tile.type === 'green') ? tile.type : 'neutral';
+    el.className = `tile tile-${tile.collected?'collected':baseType}`;
+    el.style.width = el.style.height = ts + 'px';
+    
+    if (app.currentGame === 'color' && !tile.collected) {
+      el.style.background = tile.type;
+    } else if (app.currentGame === 'redlight' && r === 0) {
+      el.textContent = '🏁';
+    } else if (tile.type === 'target') {
+      el.classList.add('tile-target');
+      el.textContent = '🎯';
+    } 
+    
+    // Icons only if NOT redlight top row flag
+    if (!(app.currentGame==='redlight' && r===0)) {
+       if (tile.type === 'red') {
+         el.textContent = '🔥';
+       } else if (tile.type === 'blue') {
+         el.textContent = '💠';
+       }
+    }
+    
+    if (app.gameRunning && !tile.collected) el.onclick = () => clickTile(r, c);
+    grid.appendChild(el);
+  }));
+}
+
+function clickTile(r, c) {
+  const tile = app.grid[r][c];
+  if (!app.gameRunning || tile.collected) return;
+  
+  if (tile.type === 'red') {
+    const el = document.getElementById(`tile-${r}-${c}`);
+    if (el) {
+      el.classList.add('hit');
+      setTimeout(() => el.classList.remove('hit'), 400);
+    }
+    lifeLost();
+    return;
+  }
+
+  switch(app.currentGame) {
+    case 'lava':
+    case 'pattern':
+      if (tile.type === 'blue') collectBlue(tile, r, c);
+      else app.score += 10;
+      break;
+    case 'color':
+      if (tile.type === app.targetColor) { app.score += 100; collectBlue(tile, r, c); winRound(); }
+      else lifeLost();
+      break;
+    case 'redlight':
+      if (app.rlglState === 'red') { lifeLost(); return; }
+      if (r === 0) winGame();
+      else app.score += 5;
+      break;
+    case 'shooter':
+      if (tile.type === 'target') { 
+        app.score += 100; 
+        tile.collected = true; 
+        app.blueCollected++;
+        app.spawnRate = Math.max(200, app.spawnRate - 80); // Faster with each hit!
+        if (app.blueCollected >= app.blueTotal) winGame();
+        else showToast('NICE SHOT!', 'ok');
+      } else lifeLost();
+      break;
+  }
+  updateHUD();
+}
+
+function startRound() {
+  document.getElementById('startOverlay').style.display = 'none';
+  app.gameRunning = true; app.timer = 30;
+  if (app.currentGame === 'lava') {
+    app.lavaRow = 0;
+    app.lavaInterval = setInterval(() => {
+      app.lavaRow++;
+      if (app.lavaRow >= app.rows) loseGame('CONSUMED!','🔥');
+      updateLavaTiles();
+    }, 3000);
+  } else if (app.currentGame === 'redlight') {
+    startRLGLWatcher();
+  } else if (app.currentGame === 'shooter') {
+    startShooterSpawner();
+  }
+  app.timerInterval = setInterval(() => {
+    app.timer--; updateHUD();
+    if (app.timer <= 0) loseGame("TIME'S UP!",'⏰');
+  }, 1000);
+  renderGrid();
+}
+
+function updateLavaTiles() {
+  const startRow = app.rows - app.lavaRow;
+  for(let r = startRow; r < app.rows; r++) {
+    for(let c = 0; c < app.cols; c++) { app.grid[r][c].type = 'red'; }
+  }
+  renderGrid();
+}
+
+function pickNewTargetColor() {
+  app.targetColor = app.colorPool[Math.floor(Math.random()*app.colorPool.length)];
+  document.getElementById('targetColorBox').style.background = app.targetColor;
+}
+
+function winRound() {
+  clearIntervals(); showToast('NEXT STAGE', 'ok');
+  generateGrid(); startRound();
+}
+
+function startRLGLWatcher() {
+  const badge = document.getElementById('statusDisplay');
+  const card = document.getElementById('statusHUD');
+  const tick = () => {
+    if (!app.gameRunning) return;
+    app.rlglState = Math.random() > 0.4 ? 'green' : 'red';
+    
+    if (app.rlglState === 'red') {
+      badge.textContent = 'FREEZE';
+      badge.style.color = 'var(--neon-red)';
+      card.style.borderColor = 'var(--neon-red)';
+      document.querySelector('.game-header').style.background = 'rgba(255,0,0,0.15)';
+    } else {
+      badge.textContent = 'RUN';
+      badge.style.color = 'var(--neon-green)';
+      card.style.borderColor = 'var(--neon-green)';
+      document.querySelector('.game-header').style.background = 'rgba(0,255,0,0.1)';
+    }
+    
+    setTimeout(tick, 1500 + Math.random()*2500);
+  };
+  tick();
+}
+
+function startShooterSpawner() {
+  app.spawnRate = 1200;
+  const spawn = () => {
+    if (!app.gameRunning) return;
+    const r = Math.floor(Math.random()*app.rows), c = Math.floor(Math.random()*app.cols);
+    app.grid[r][c].type = 'target';
+    renderGrid();
+    setTimeout(() => { if (app.grid[r][c].type === 'target') app.grid[r][c].type = 'green'; renderGrid(); }, app.spawnRate);
+    app.spawnRate = Math.max(400, app.spawnRate - 30);
+    setTimeout(spawn, app.spawnRate + 200);
+  };
+  spawn();
+}
+
+function collectBlue(tile, r, c) {
+  tile.collected = true; app.blueCollected++;
+  if (app.blueCollected >= app.blueTotal) {
+    if (app.currentGame === 'pattern' && app.pattern === 1) {
+      clearIntervals();
+      app.pattern = 2;
+      document.getElementById('selectPattern').value = "2";
+      showToast('PATTERN 1 CLEAR! → PATTERN 2', 'ok');
+      setTimeout(() => { generateGrid(); startRound(); }, 1000);
+    } else {
+      winGame();
+    }
+  }
+}
+
+function lifeLost() {
+  app.lives--; updateHUD();
+  if (app.lives <= 0) loseGame('ELIMINATED!','💀');
+}
+
+function winGame() {
+  clearIntervals(); app.gameRunning = false;
+  document.getElementById('winScore').textContent = app.score;
+  document.getElementById('winModal').classList.add('open');
+  saveProgress();
+}
+
+function loseGame(title, icon) {
+  clearIntervals(); app.gameRunning = false;
+  document.getElementById('loseTitle').textContent = title;
+  document.getElementById('loseIcon').textContent = icon;
+  document.getElementById('loseScore').textContent = app.score;
+  document.getElementById('loseModal').classList.add('open');
+}
+
+function clearIntervals() {
+  clearInterval(app.timerInterval); clearInterval(app.lavaInterval);
+  clearInterval(app.rlglInterval); clearInterval(app.shooterInterval);
+}
+
+function goBack() { clearIntervals(); app.gameRunning = false; showScreen('selection-screen'); }
+function resetGame() { clearIntervals(); app.score = 0; app.lives = 5; app.timer = 30; app.blueCollected = 0; updateHUD(); }
+function restartGame() { closeModal('winModal'); closeModal('loseModal'); resetGame(); generateGrid(); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function updateHUD() {
+  document.getElementById('scoreDisplay').textContent = String(app.score).padStart(3,'0');
+  const td = document.getElementById('timerDisplay');
+  if (td) td.textContent = app.timer;
+  document.querySelectorAll('.life-heart').forEach((h, i) => h.classList.toggle('gone', i >= app.lives));
+}
+
+function showToast(msg, type='ok') {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = `toast ${type} show`;
+  setTimeout(() => t.className = 'toast', 2000);
+}
+
+(function boot() {
+  try {
+    if (validateStoredToken()) {
+      renderUserUI(); loadProgress();
+      showScreen('selection-screen');
+      setTimeout(() => initCarousel(), 100);
+    } else {
+      showScreen('auth-screen');
+    }
+  } catch (e) {
+    console.error("Boot failure:", e);
+    showScreen('auth-screen');
+  }
+})();
+</script>
+</body>
+</html>
